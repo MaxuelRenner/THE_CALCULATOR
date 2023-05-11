@@ -1,0 +1,322 @@
+﻿@page "/"
+
+<h3>Calculator</h3>
+
+<div class="CheckOut">
+    <input class="InputView" maxlength="16" readonly placeholder="0" @bind-value=@this.DisplayNums />
+    <div style="padding-left: 5px;" class="d-flex gap-2">
+        <button Size="Size.Small" class="ButtonsShape" @onclick="@Delete">
+            @*iconata ne se ocvetqva*@
+            <MudIcon Icon="@Icons.Material.Outlined.Backspace" Color="Color.Error" Style="padding-right: 55px; padding-left: 55px;" />
+        </button>
+
+        <button class="ButtonsShape" @onclick="@Clear">C</button>
+        @*<MudIconButton Icon="@Icons.Material.Filled.Backspace" style="width: 200px; height: 150px; background-color: #fc6203; margin-bottom: 5px; border-radius: 15px; color: snow; font-size: 8px;"></MudIconButton>*@
+        <button class="ButtonsShape" @onclick="@(async (args) => await Percentage())">%</button>
+        <button class="ButtonsShape" @onclick="@(async (args) => await SelectSymbol('/'))">/</button>
+    </div>
+
+    <div style="padding-left: 5px;" class="d-flex gap-2">
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("7"))">7</button>
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("8"))">8</button>
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("9"))">9</button>
+        <button class="ButtonsShape" @onclick="@(async (args) => await SelectSymbol('*'))">X</button>
+    </div>
+
+    <div style="padding-left: 5px;" class="d-flex gap-2">
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("4"))">4</button>
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("5"))">5</button>
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("6"))">6</button>
+        <button class="ButtonsShape" @onclick="@(async (args) => await SelectSymbol('-'))">-</button>
+    </div>
+
+    <div style="padding-left: 5px;" class="d-flex gap-2">
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("1"))">1</button>
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("2"))">2</button>
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("3"))">3</button>
+        <button class="ButtonsShape" @onclick="@(async (args) => await SelectSymbol('+'))">+</button>
+    </div>
+
+    <div style="padding-left: 5px;" class="d-flex gap-2">
+        <button class="ButtonsShape" @onclick="@(async (args) => await ChangeNumSymbol())">+/-</button>
+        <button class="NumberShape" @onclick="@(async (args) => await ButtonEvent("0"))">0</button>
+        <button class="ButtonsShape" style="font-weight: 1000;" @onclick="@(async (args) => await CommaClicked())">.</button>
+        <button class="ButtonsShape" @onclick="@(async (args) => await SumarizeAll("="))">=</button>
+    </div>
+</div>
+
+<style>
+    .CheckOut {
+        border-radius: 10px;
+        background-color: #1e211f;
+        width: 835px;
+    }
+
+    .NumberShape {
+        width: 200px;
+        height: 100px;
+        background-color: #333634;
+        margin-bottom: 5px;
+        border-radius: 15px;
+        color: white;
+        font-size: 20px;
+    }
+
+    .ButtonsShape {
+        width: 200px;
+        height: 100px;
+        background-color: #333634;
+        margin-bottom: 5px;
+        border-radius: 15px;
+        color: darkgray;
+        font-size: 20px;
+    }
+
+    .InputView {
+        width: 835px;
+        height: 100px;
+        background-color: transparent;
+        border-style: none;
+        text-align: right;
+        font-size: 70px;
+        color: snow;
+        outline: none !important;
+        outline-width: 0 !important;
+        box-shadow: none;
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+    }
+</style>
+@code
+{
+    [Parameter]
+    public string NumberOne { get; set; }
+
+    [Parameter]
+    public string NumberTwo { get; set; }
+
+    [Parameter]
+    public string DisplayNums { get; set; }
+
+    [Parameter]
+    public double Sum { get; set; }
+
+    public char CurrentSymbol { get; set; }
+
+    public bool isCommaOn { get; set; }
+
+    public bool isPersentageOn { get; set; }
+
+    async Task ButtonEvent(string CustomNumber)
+    {
+        if (NumberOne.ToString().Length == 16 && DisplayNums.ToString().Length == 16)
+        {
+            return;
+        }
+        if (!char.IsWhiteSpace(this.CurrentSymbol) && string.IsNullOrEmpty(this.NumberOne))
+        {
+            this.NumberOne += CustomNumber;
+            this.DisplayNums = this.NumberOne;
+            return;
+        }
+        if (!char.IsWhiteSpace(this.CurrentSymbol))
+        {
+            this.NumberTwo += CustomNumber;
+            this.DisplayNums = NumberTwo;
+            return;
+        }
+        if (this.Sum != 0)
+        {
+            this.NumberOne = "";
+            this.NumberOne += CustomNumber;
+            this.DisplayNums = this.NumberOne;
+            this.Sum = 0;
+            return;
+        }
+
+        this.NumberOne += CustomNumber;
+        this.DisplayNums = this.NumberOne;
+    }
+
+    async Task ChangeNumSymbol()
+    {
+        if (this.DisplayNums == string.Empty || double.Parse(this.DisplayNums) == 0)
+        {
+            return;
+        }
+        if (this.NumberTwo != string.Empty && string.Equals(this.NumberTwo, this.DisplayNums))
+        {
+            this.NumberTwo = (double.Parse(this.NumberTwo) * -1).ToString();
+            this.DisplayNums = this.NumberTwo;
+            return;
+        }
+        if (this.NumberOne != string.Empty && string.Equals(this.NumberOne, this.DisplayNums))
+        {
+            this.NumberOne = (double.Parse(this.NumberOne) * -1).ToString();
+            this.DisplayNums = this.NumberOne;
+        }
+    }
+
+    //da pishe 80 pri 100 - 20 a ne 0.8
+    async Task Percentage()
+    {
+        if (string.IsNullOrEmpty(this.NumberOne))
+        {
+            this.isPersentageOn = false;
+            return;
+        }
+        if (!string.IsNullOrEmpty(this.NumberOne) && !string.IsNullOrEmpty(this.NumberTwo))
+        {
+            this.isPersentageOn = true;
+            await SumarizeAll("=");
+            return;
+        }
+        this.DisplayNums = (double.Parse(this.NumberOne) / 100).ToString();
+        if (this.DisplayNums.Contains("."))
+        {
+            this.isCommaOn = true;
+        }
+        this.NumberOne = this.DisplayNums;
+        return;
+    }
+
+    async Task CommaClicked()
+    {
+        if (this.DisplayNums != string.Empty && this.isCommaOn == false)
+        {
+            this.isCommaOn = true;
+            if (this.NumberTwo != string.Empty && string.Equals(this.NumberTwo, this.DisplayNums))
+            {
+                this.NumberTwo += ".";
+                this.DisplayNums = this.NumberTwo;
+                return;
+            }
+            if (this.NumberOne != string.Empty && string.Equals(this.NumberOne, this.DisplayNums))
+            {
+                this.NumberOne += ".";
+                this.DisplayNums = this.NumberOne;
+            }
+            if (this.isPersentageOn == true)
+            {
+                this.isCommaOn = true;
+            }
+        }
+    }
+
+    void Clear()
+    {
+        this.NumberOne = "";
+        this.NumberTwo = "";
+        this.DisplayNums = "";
+        this.Sum = 0;
+        this.CurrentSymbol = ' ';
+        this.isCommaOn = false;
+        this.isPersentageOn = false;
+    }
+
+    void Delete()
+    {
+        if (string.IsNullOrEmpty(DisplayNums) && string.IsNullOrEmpty(NumberOne))
+        {
+            return;
+        }
+
+        if (this.DisplayNums.Length <= 0)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(this.NumberTwo))
+        {
+            this.DisplayNums = this.DisplayNums.Remove(DisplayNums.Length - 1);
+            if (!this.DisplayNums.Contains("."))
+            {
+                this.isCommaOn = false;
+            }
+            this.NumberTwo = this.DisplayNums;
+            this.Sum = double.Parse(this.DisplayNums);
+            return;
+        }
+
+        this.DisplayNums = this.DisplayNums.Remove(DisplayNums.Length - 1);
+        if (!this.DisplayNums.Contains("."))
+        {
+            this.isCommaOn = false;
+        }
+        this.NumberOne = this.DisplayNums;
+        if (this.DisplayNums.Length <= 0)
+        {
+            this.NumberOne = string.Empty;
+            this.DisplayNums = string.Empty;
+            return;
+        }
+    }
+
+    async Task SelectSymbol(char value)
+    {
+        if (!String.IsNullOrEmpty(this.NumberOne) && !String.IsNullOrEmpty(this.NumberTwo) && !char.IsWhiteSpace(this.CurrentSymbol))
+        {
+            await this.SumarizeAll("");
+        }
+        this.CurrentSymbol = value;
+        this.isCommaOn = false;
+    }
+
+    async Task SumarizeAll(string equalsTo)
+    {
+        if (this.NumberTwo == "" && !char.IsWhiteSpace(this.CurrentSymbol))
+        {
+            return;
+        }
+        if (string.IsNullOrEmpty(this.NumberOne))
+        {
+            this.CurrentSymbol = ' ';
+            return;
+        }
+        switch (this.CurrentSymbol)
+        {
+            case '+':
+                this.Sum = double.Parse(this.NumberOne) + double.Parse(this.NumberTwo);
+                break;
+            case '-':
+                this.Sum = double.Parse(this.NumberOne) - double.Parse(this.NumberTwo);
+                break;
+            case '*':
+                //pri max 9-tki po kvoto i da bilo ne se displayva numberTwo i ne moje da se umnoji
+                this.Sum = double.Parse(this.NumberOne) * double.Parse(this.NumberTwo);
+                break;
+            case '/':
+                this.Sum = double.Parse(this.NumberOne) / double.Parse(this.NumberTwo);
+                break;
+        }
+
+        if (this.isPersentageOn == true)
+        {
+            this.Sum /= 100;
+        }
+        this.DisplayNums = this.Sum.ToString();
+        this.NumberOne = this.Sum.ToString();
+        this.Sum = equalsTo == "=" ? this.Sum : 0;
+        this.CurrentSymbol = ' ';
+        this.NumberTwo = "";
+        this.isCommaOn = this.DisplayNums.Contains(".") ? true : false;
+
+    }
+
+    protected override void OnInitialized()
+    {
+        this.NumberOne = "";
+        this.NumberTwo = "";
+        this.DisplayNums = string.Empty;
+        this.CurrentSymbol = ' ';
+        this.Sum = 0;
+        this.isCommaOn = false;
+        this.isPersentageOn = false;
+        base.OnInitialized();
+    }
+}
