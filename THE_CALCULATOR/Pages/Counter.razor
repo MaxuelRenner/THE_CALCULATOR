@@ -1,12 +1,12 @@
-﻿@page "/"
+@page "/"
 
 <h3>Calculator</h3>
 
 <div class="CheckOut">
-    <input class="InputView" maxlength="16" readonly placeholder="0" @bind-value=@this.DisplayNums />
+    <input class="InputView" maxlength="17" readonly placeholder="0" @bind-value=@this.DisplayNums />
     <div style="padding-left: 5px;" class="d-flex gap-2">
         <button Size="Size.Small" class="ButtonsShape" @onclick="@Delete">
-            @*iconata ne se ocvetqva*@
+            @*No color ON*@
             <MudIcon Icon="@Icons.Material.Outlined.Backspace" Color="Color.Error" Style="padding-right: 55px; padding-left: 55px;" />
         </button>
 
@@ -114,7 +114,7 @@
 
     async Task ButtonEvent(string CustomNumber)
     {
-        if (NumberOne.ToString().Length == 16 && DisplayNums.ToString().Length == 16)
+        if (DisplayNums.ToString().Length >= 16)
         {
             return;
         }
@@ -162,7 +162,6 @@
         }
     }
 
-    //da pishe 80 pri 100 - 20 a ne 0.8
     async Task Percentage()
     {
         if (string.IsNullOrEmpty(this.NumberOne))
@@ -172,7 +171,8 @@
         }
         if (!string.IsNullOrEmpty(this.NumberOne) && !string.IsNullOrEmpty(this.NumberTwo))
         {
-            this.isPersentageOn = true;
+            this.NumberTwo = ((double.Parse(this.NumberTwo) / 100) * double.Parse(this.NumberOne)).ToString();
+            this.DisplayNums = this.NumberTwo;
             await SumarizeAll("=");
             return;
         }
@@ -265,6 +265,7 @@
         }
         this.CurrentSymbol = value;
         this.isCommaOn = false;
+        this.DisplayNums = this.NumberTwo;
     }
 
     async Task SumarizeAll(string equalsTo)
